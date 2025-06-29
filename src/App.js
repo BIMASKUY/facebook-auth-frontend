@@ -151,11 +151,7 @@ function App() {
           <div className="api-example">
             <h3>🔗 API Request Example:</h3>
             <pre>
-{`GET https://graph.facebook.com/v18.0/me?access_token=${authCode}
-
-// Or using Authorization header
-GET https://graph.facebook.com/v18.0/me/adaccounts
-Authorization: Bearer ${authCode}`}
+              {`GET https://graph.facebook.com/v18.0/me/adaccounts?access_token=${authCode}`}
             </pre>
           </div>
 
