@@ -10,7 +10,7 @@ function App() {
   const facebookConfig = {
     appId: process.env.REACT_APP_FACEBOOK_APP_ID,
     redirectUri: process.env.REACT_APP_FACEBOOK_REDIRECT_URI,
-    scope: 'ads_read', // Facebook permission for reading ads data
+    scope: 'ads_read,email', // Facebook permission for reading ads data
     responseType: 'token', // Changed from 'code' to 'token'
     state: 'facebook_oauth_security_token',
     version: 'v18.0'
@@ -97,17 +97,16 @@ function App() {
           <div className="facebook-info">
             <h3>🚀 Connect to Facebook Ads API</h3>
             <p>Click the button below to authorize access to your Facebook Ads data.</p>
-            
-            <div className="permissions-info">
-              <h4>📋 Permissions Requested:</h4>
-              <ul>
-                <li><strong>ads_read</strong> - Read access to your Facebook Ads data</li>
-                <li>View ad campaigns, ad sets, and ads performance</li>
-                <li>Access insights and analytics data</li>
-                <li>Read Business Manager information</li>
-              </ul>
-            </div>
-
+              <div className="permissions-info">
+                <h4>📋 Permissions Requested:</h4>
+                <ul>
+                  <li><strong>ads_read</strong> - Read access to your Facebook Ads data</li>
+                  <li><strong>email</strong> - Access to your email address</li>
+                  <li>View ad campaigns, ad sets, and ads performance</li>
+                  <li>Access insights and analytics data</li>
+                  <li>Read Business Manager information</li>
+                </ul>
+              </div>
             <div className="setup-info">
               <h4>⚙️ Setup Requirements:</h4>
               <ul>
