@@ -11,33 +11,33 @@ function App() {
     appId: process.env.REACT_APP_FACEBOOK_APP_ID,
     redirectUri: process.env.REACT_APP_FACEBOOK_REDIRECT_URI,
     scope: 'ads_read,email', // Facebook permission for reading ads data
-    responseType: 'token', // Changed from 'code' to 'token'
+    responseType: 'code', // Changed back to 'code' from 'token'
     state: 'facebook_oauth_security_token',
     version: 'v18.0'
   };
 
-  // Check URL for access token on component mount
+  // Check URL for authorization code on component mount
   useEffect(() => {
-    // For token response, Facebook uses URL hash (#) instead of query (?)
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const token = hashParams.get('access_token');
-    const errorParam = hashParams.get('error');
-    const errorDescription = hashParams.get('error_description');
-    const state = hashParams.get('state');
+    // For code response, Facebook uses URL query parameters (?) instead of hash (#)
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    const errorParam = urlParams.get('error');
+    const errorDescription = urlParams.get('error_description');
+    const state = urlParams.get('state');
     
     if (errorParam) {
       setError(`Facebook OAuth Error: ${errorParam} - ${errorDescription || 'Unknown error'}`);
       return;
     }
     
-    if (token) {
+    if (code) {
       // Verify state parameter for security
       if (state !== facebookConfig.state) {
         setError('Invalid state parameter. Possible CSRF attack.');
         return;
       }
       
-      setAuthCode(token); // This will now be the actual access token
+      setAuthCode(code); // This will now be the authorization code
       // Clean URL for better UX
       window.history.replaceState({}, document.title, window.location.pathname);
     }
@@ -79,7 +79,7 @@ function App() {
     <div className="container">
       <header>
         <h1>📘 Facebook Ads API Authorization</h1>
-        <p className="subtitle">Access token generator for Facebook Marketing API</p>
+        <p className="subtitle">Authorization code generator for Facebook Marketing API</p>
       </header>
       
       {error && (
@@ -125,14 +125,14 @@ function App() {
       ) : authCode ? (
         <div className="code-section">
           <div className="success-header">
-            <h2>✅ Facebook Access Token Generated</h2>
+            <h2>✅ Facebook Authorization Code Generated</h2>
             <p className="instructions">
-              Use this access token directly with Facebook Graph API calls
+              Exchange this code for an access token using your backend server
             </p>
           </div>
           
           <div className="code-display">
-            <p className="code-label">Your access token:</p>
+            <p className="code-label">Your authorization code:</p>
             <div className="code-box">
               <code>{authCode}</code>
             </div>
@@ -140,7 +140,7 @@ function App() {
           
           <div className="buttons">
             <button className="copy-button" onClick={copyToClipboard}>
-              {copied ? '✅ Copied!' : '📋 Copy Token'}
+              {copied ? '✅ Copied!' : '📋 Copy Code'}
             </button>
             <button className="reset-button" onClick={resetApp}>
               🔄 Start Over
@@ -148,28 +148,34 @@ function App() {
           </div>
 
           <div className="api-example">
-            <h3>🔗 API Request Example:</h3>
+            <h3>🔗 Token Exchange Example:</h3>
             <pre>
-              {`GET https://graph.facebook.com/v18.0/me/adaccounts?access_token=${authCode}`}
+{`POST https://graph.facebook.com/v18.0/oauth/access_token
+Content-Type: application/x-www-form-urlencoded
+
+client_id=${facebookConfig.appId}&
+client_secret=YOUR_APP_SECRET&
+redirect_uri=${facebookConfig.redirectUri}&
+code=${authCode}`}
             </pre>
           </div>
 
           <div className="next-steps">
             <h3>📝 Next Steps:</h3>
             <ol>
-              <li>Copy the access token above</li>
-              <li>Use it directly in Facebook Graph API calls</li>
-              <li>Get your ad accounts: GET /me/adaccounts</li>
-              <li>Access campaigns, ads, and insights data</li>
+              <li>Copy the authorization code above</li>
+              <li>Send it to your backend server</li>
+              <li>Exchange the code for an access token using your app secret</li>
+              <li>Use the access token for Facebook Graph API calls</li>
             </ol>
           </div>
 
           <div className="token-info">
-            <h3>🔑 Token Information:</h3>
+            <h3>🔑 Code Information:</h3>
             <ul>
-              <li><strong>User Access Token:</strong> Valid for ~1-2 hours initially</li>
-              <li><strong>Exchange for long-lived:</strong> Can be extended to ~60 days</li>
-              <li><strong>Ready to use:</strong> No backend exchange needed</li>
+              <li><strong>Authorization Code:</strong> Single-use, expires in ~10 minutes</li>
+              <li><strong>Requires Exchange:</strong> Must be exchanged for access token on backend</li>
+              <li><strong>More Secure:</strong> App secret never exposed to frontend</li>
               <li><strong>Scope:</strong> ads_read permission included</li>
             </ul>
           </div>
